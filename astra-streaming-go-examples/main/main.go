@@ -17,26 +17,22 @@ import (
 )
 
 const (
-	TOKEN = "PASTE TOKEN HERE"
-	PULSAR_BROKER = "pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651"
-	PULSAR_WEB = "https://pulsar-aws-useast2.api.streaming.datastax.com"
-	PULSAR_CLUSTER_NAME = "pulsar-aws-useast2"
-	TOPIC_NAME = "njcdcawsuseast2/astracdc/data-6ee78bd3-78af-4ddd-be73-093f38d094bd-ks1.tbl1"
+	TOKEN             = "PASTE TOKEN HERE"
+	PULSAR_BROKER     = "pulsar+ssl://pulsar-aws-useast2.streaming.datastax.com:6651"
+	PULSAR_WEB        = "https://pulsar-aws-useast2.api.streaming.datastax.com"
+	TOPIC_NAME        = "njcdcawsuseast2/astracdc/data-6ee78bd3-78af-4ddd-be73-093f38d094bd-ks1.tbl1"
 	SUBSCRIPTION_NAME = "my-subscription5"
-	ASTRA_ORG = "2808281a-946e-43c1-a64c-8951616f22fe"
 )
-
-
 
 func main() {
 
 	log.Println("Astra Streaming CDC Consumer")
 
 	// Get the Astra CDC Topic Schema From the Schema registry
-	keyavroSchema,valueavroSchema := getSchema()
+	keyavroSchema, valueavroSchema := getSchema()
 
 	// Configuration variables pertaining to this consumer
-	
+
 	token := pulsar.NewAuthenticationToken(TOKEN)
 
 	// Pulsar client
@@ -51,9 +47,8 @@ func main() {
 
 	defer client.Close()
 
-
 	consumerOptions := pulsar.ConsumerOptions{
-		Topic:                       "persistent://"+TOPIC_NAME,
+		Topic:                       "persistent://" + TOPIC_NAME,
 		SubscriptionName:            SUBSCRIPTION_NAME,
 		SubscriptionInitialPosition: pulsar.SubscriptionPositionEarliest,
 	}
@@ -85,7 +80,6 @@ func main() {
 		//Use the ValueAvroSchema to decode the value
 		err = valueavroSchema.Decode(msg.Payload(), &valueMap)
 
-		
 		if err != nil {
 			log.Fatal(err)
 		} else {
@@ -107,8 +101,7 @@ type PulsarSchema struct {
 
 func getSchema() (*pulsar.AvroSchema, *pulsar.AvroSchema) {
 
-
-	url := fmt.Sprintf("%s/admin/v2/schemas/%s/schema",PULSAR_WEB, TOPIC_NAME)
+	url := fmt.Sprintf("%s/admin/v2/schemas/%s/schema", PULSAR_WEB, TOPIC_NAME)
 
 	method := "GET"
 	client := &http.Client{}
@@ -116,23 +109,21 @@ func getSchema() (*pulsar.AvroSchema, *pulsar.AvroSchema) {
 
 	if err != nil {
 		log.Fatal(err)
-		return nil,nil
+		return nil, nil
 	}
-	req.Header.Add("X-DataStax-Current-Org-X", ASTRA_ORG)
-	req.Header.Add("X-DataStax-Pulsar-Cluster", PULSAR_CLUSTER_NAME)
 	req.Header.Add("Authorization", "Bearer "+TOKEN)
 
 	res, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
-		return nil,nil
+		return nil, nil
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Fatal(err)
-		return nil,nil
+		return nil, nil
 	}
 	jsonString := (string(body))
 
@@ -157,5 +148,5 @@ func getSchema() (*pulsar.AvroSchema, *pulsar.AvroSchema) {
 	valueSchema = re.ReplaceAllString(valueSchema, "")
 	valueavroSchema := pulsar.NewAvroSchema(valueSchema, nil)
 
-	return keyavroSchema,valueavroSchema
+	return keyavroSchema, valueavroSchema
 }
