@@ -76,7 +76,7 @@ while waitingForMsg:
     try:
         msg = consumer.receive(2000)
 
-        # Key is Base64 Encoded, so it needs be decoded
+        # The PartitionKey is Base64 Encoded, so it needs to be decoded
         msgKey = msg.partition_key()
         msgKey_decoded = base64.b64decode(msgKey)
 
