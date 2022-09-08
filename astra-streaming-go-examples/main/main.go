@@ -142,10 +142,12 @@ func getSchema() (*pulsar.AvroSchema, *pulsar.AvroSchema) {
 
 	//the namespaces start with numbers and AVRO doesn't like it
 	//so strip them out for now
-	var re = regexp.MustCompile(`\d.*_`)
-	keySchema = re.ReplaceAllString(keySchema, "")
+	var re = regexp.MustCompile(`\"namespace\":\"[[:alnum:]]*_`)
+	keySchema = re.ReplaceAllString(keySchema, "\"namespace\":\"")
+	log.Printf(keySchema)
 	keyavroSchema := pulsar.NewAvroSchema(keySchema, nil)
-	valueSchema = re.ReplaceAllString(valueSchema, "")
+	valueSchema = re.ReplaceAllString(valueSchema, "\"namespace\":\"")
+	log.Printf(valueSchema)
 	valueavroSchema := pulsar.NewAvroSchema(valueSchema, nil)
 
 	return keyavroSchema, valueavroSchema
